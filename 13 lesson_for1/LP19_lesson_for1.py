@@ -1,13 +1,48 @@
+import random
+import numpy
+
+random.seed()
 #Создать список из десяти целых чисел.
-mas=[x for x in range(10)]
+mas=[random.randint(0,100) for x in range(10)]
 
 #Вывести на экран каждое число, увеличенное на 1.
 mas1=[x+1 for x in mas]
 print(mas1)
 
 #Ввести с клавиатуры строку.
-str=intput("Введите строку\n")
+str=input("Введите строку\n")
 
 #Вывести эту же строку вертикально: по одному символу на строку консоли.
 for x in range(len(str)):
     print(str[x])
+
+#Создать список из словарей с оценками учеников разных классов школы вида 
+# [{'school_class': '4a', 'scores': [3,4,4,5,2]}, ...]
+
+
+clases = 4
+letters = 'абв'
+scores = 5
+max_scor = 5
+min_scor = 2
+
+sch=[]
+for cl in range(1,clases):
+    for let in range(random.randint(1,len(letters))):
+        sc = [random.randint(min_scor,max_scor) for x in range(scores)]
+        c1=str(cl)+letters[let]
+        #print('school_class', c1, 'scores', sc)
+        sch.append(dict(school_class= c1, scores=sc ))
+print(sch)
+
+#Посчитать и вывести средний балл по всей школе.
+#Посчитать и вывести средний балл по каждому классу.
+
+stats = []
+for cl in range(len(sch)):
+    c1 = sch[cl]['school_class']
+    m1 = numpy.mean(sch[cl]['scores'])
+    stats.append(dict(school_class= c1, scores=m1))
+    #print(c1,m1)
+print(stats)
+print(numpy.mean([stats[x]['scores'] for x in range(len(stats))]))
