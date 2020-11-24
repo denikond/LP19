@@ -10,11 +10,11 @@ mas1=[x+1 for x in mas]
 print(mas1)
 
 #Ввести с клавиатуры строку.
-str=input("Введите строку\n")
+str1=input("Введите строку\n")
 
 #Вывести эту же строку вертикально: по одному символу на строку консоли.
-for x in range(len(str)):
-    print(str[x])
+for x in range(len(str1)):
+    print(str1[x])
 
 #Создать список из словарей с оценками учеников разных классов школы вида 
 # [{'school_class': '4a', 'scores': [3,4,4,5,2]}, ...]
@@ -30,7 +30,7 @@ sch=[]
 for cl in range(1,clases):
     for let in range(random.randint(1,len(letters))):
         sc = [random.randint(min_scor,max_scor) for x in range(scores)]
-        c1=str(cl)+letters[let]
+        c1 = str(cl) + letters[let]
         #print('school_class', c1, 'scores', sc)
         sch.append(dict(school_class= c1, scores=sc ))
 print(sch)
@@ -39,9 +39,9 @@ print(sch)
 #Посчитать и вывести средний балл по каждому классу.
 
 stats = []
-for cl in range(len(sch)):
-    c1 = sch[cl]['school_class']
-    m1 = numpy.mean(sch[cl]['scores'])
+for cl1 in range(len(sch)):
+    c1 = sch[cl1]['school_class']
+    m1 = numpy.mean(sch[cl1]['scores'])
     stats.append(dict(school_class= c1, scores=m1))
     #print(c1,m1)
 print(stats)
