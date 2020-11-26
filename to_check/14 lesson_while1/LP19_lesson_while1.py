@@ -24,4 +24,4 @@ def ask_user(qa):
     else:
         return "Ввод неопознан"
 
-print (ask_user(qa))
+print(ask_user(qa))
