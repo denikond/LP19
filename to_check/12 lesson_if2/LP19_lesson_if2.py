@@ -1,12 +1,12 @@
 
-def myfunc(str1,str2):
+def myfunc(str1, str2):
     if type(str1) is not str or type(str2) is not str:
         return 0
     if str1 == str2:
         return 1
-    if len(str1)>len(str2):
+    if len(str1) > len(str2):
         return 2
-    if str2=='learn':
+    if str2 == 'learn':
         return 3
 
 
