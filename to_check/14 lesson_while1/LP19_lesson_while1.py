@@ -2,9 +2,9 @@
 # спрашивает пользователя “Как дела?”, пока он не ответит “Хорошо”
 
 def hello_user():
-    str1=input("Как дела?\n")
+    str1 = input("Как дела?\n")
     while str1 != "Хорошо":
-        str1=input("Как дела?\n")
+        str1 = input("Как дела?\n")
 
 hello_user()
 
@@ -17,9 +17,9 @@ qa = {"Как дела?": "Хорошо!", "Что делаешь?": "Прогр
 #Пользователь: Что делаешь?
 #Программа: Программирую
 def ask_user(qa):
-    str1=input("Спроси меня? Как дела?/Что делаешь?\n")
-    ans=qa.get(str1)
-    if ans != None:
+    str1 = input("Спроси меня? Как дела?/Что делаешь?\n")
+    ans = qa.get(str1)
+    if ans is not None:
         return ans
     else:
         return "Ввод неопознан"
