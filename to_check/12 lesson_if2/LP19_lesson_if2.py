@@ -11,15 +11,15 @@ def myfunc(str1, str2):
 
 
 #dataset0
-print(myfunc(0,"string"))
-print(myfunc("string",True))
+print(myfunc(0, "string"))
+print(myfunc("string", True))
 print("\n")
 #dataset1
-print(myfunc("string","string"))
+print(myfunc("string", "string"))
 #dataset2
-print(myfunc("string1","string"))
+print(myfunc("string1", "string"))
 #dataset3
-print(myfunc("d","learn"))
+print(myfunc("d", "learn"))
 
 
 
