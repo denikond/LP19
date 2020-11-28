@@ -18,38 +18,34 @@ def greet_user(update, context):
 
 def planet_const(update, context):
     #print("вызван /planet")
+    #выделяем имя планеты
     planet = update.message.text.split()[1]
-    planet = planet.capitalize() 
-    p_obj = None
-    if planet == 'Mercury':
-        p_obj = ephem.Mercury(datetime.datetime.now())
-    if planet == 'Venus':
-        p_obj = ephem.Venus(datetime.datetime.now())
-    if planet == 'Mars':
-        p_obj = ephem.Mars(datetime.datetime.now())
-    if planet == 'Jupiter':
-        p_obj = ephem.Jupiter(datetime.datetime.now())
-    if planet == 'Saturn':
-        p_obj = ephem.Saturn(datetime.datetime.now())
-    if planet == 'Uranus':
-        p_obj = ephem.Uranus(datetime.datetime.now())
-    if planet == 'Neptune':
-        p_obj = ephem.Neptune(datetime.datetime.now())
-    if planet == 'Pluto':
-        p_obj = ephem.Pluto(datetime.datetime.now())
-    if planet == 'Moon':
-        p_obj = ephem.Moon(datetime.datetime.now())
-    if p_obj is None:
-        update.message.reply_text("Unknown planet")
-    else:
+    #Нормализуем ее вид (с большой буквы, остальные мал)
+    planet = planet.capitalize()
+    #выгружаем перечень объектов из ephem втроенной функцией
+    ep_obj = ephem._libastro.builtin_planets()
+    #оставляем только объекты с кодом Planet
+    ep_planet = [ep_obj[x][2] for x in range(len(ep_obj)) if ep_obj[x][1] == 'Planet']
+    #если то что ввели, соответствует одному элементу из библиотеки ephem с тегом Planet
+    if planet in ep_planet:
+        #формируем команду для получения объекта ephem.планета blah-bla
+        comm = 'ephem.'+ planet + '(datetime.datetime.now())'
+        #выполняем эту команду, получаем указатель на объект
+        p_obj = eval(comm)
+        #получаем созвездие
         constellation = ephem.constellation(p_obj)
-        if planet == 'Moon':
-            tex = 'The Moon'
+        #Нормализуем вывод к правилам англ.языка
+        if planet == 'Moon' or planet =='Sun':
+            tex = 'The '
         else:
-            tex = planet
-        tex = tex + ' is in ' + constellation[1] + ' constellation now.'
+            tex = ''
+        #Формируем вывод сообщения в человечесокм виде
+        tex = tex + planet + ' is in ' + constellation[1] + ' constellation now.'
+        #Выводим сообщение в канал чатбота
         update.message.reply_text(tex)
-        
+    else:
+        #Выводим сообщение в канал чатбота
+        update.message.reply_text("Unknown planet")
 
 
 def main():
