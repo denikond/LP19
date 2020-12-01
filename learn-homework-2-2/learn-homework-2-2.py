@@ -1,4 +1,4 @@
-+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import settings
 import logging
 from datetime import datetime, timedelta
@@ -45,12 +45,14 @@ def talk_to_me(update, context):
 def greet_user(update, context):
     #print("вызван /start")
     #print(update)
+    #Помогатор "что я умею"
     update.message.reply_text("я поддерживаю следующие команды")
-    update.message.reply_text("/wordcount <строка>")
     update.message.reply_text("/next_full_moon YYYY-MM-DD")
+    update.message.reply_text("/planet <Solar system planet>")
+    update.message.reply_text("/wordcount <строка>")
 
 def next_full_moon(update, context): #Функция возвращающая ближайшее полнолуние
-    locale.setlocale(locale.LC_ALL, "russian")
+    #locale.setlocale(locale.LC_ALL, "russian") В данном случае не используется
     text = update.message.text
     spl = text.split()
     try:
@@ -68,39 +70,49 @@ def wordcount(update, context): #Функция возвращающая кол�
     out_text = str(word_count) + ' слов(а)'
     update.message.reply_text(out_text)
 
-""" кусок выпилен за ненадобностью
-
 def planet_const(update, context):
     #print("вызван /planet")
-    #выделяем имя планеты
-    planet = update.message.text.split()[1]
-    #Нормализуем ее вид (с большой буквы, остальные мал)
-    planet = planet.capitalize()
+
     #выгружаем перечень объектов из ephem втроенной функцией
     ep_obj = ephem._libastro.builtin_planets()
     #оставляем только объекты с кодом Planet
     ep_planet = [ep_obj[x][2] for x in range(len(ep_obj)) if ep_obj[x][1] == 'Planet']
-    #если то что ввели, соответствует одному элементу из библиотеки ephem с тегом Planet
-    if planet in ep_planet:
-        #формируем команду для получения объекта ephem.планета blah-bla
-        comm = 'ephem.'+ planet + '(datetime.datetime.now())'
-        #выполняем эту команду, получаем указатель на объект
-        p_obj = eval(comm)
-        #получаем созвездие
-        constellation = ephem.constellation(p_obj)
-        #Нормализуем вывод к правилам англ.языка
-        if planet == 'Moon' or planet =='Sun':
-            tex = 'The '
-        else:
-            tex = ''
-        #Формируем вывод сообщения в человечесокм виде
-        tex = tex + planet + ' is in ' + constellation[1] + ' constellation now.'
-        #Выводим сообщение в канал чатбота
-        update.message.reply_text(tex)
+    text = update.message.text
+    spl = mysplit(text)
+    #А имя планеты то есть в сообщении чата?
+    if len(spl) == 1:
+        #Выдать перечень планет
+        update.message.reply_text("Допустимые имена планет:")
+        for planet in ep_planet:
+            out_text = planet
+            update.message.reply_text(out_text)
     else:
-        #Выводим сообщение в канал чатбота
-        update.message.reply_text("Unknown planet")
-"""
+        #выделяем имя планеты
+        planet = spl[1]
+        #Нормализуем ее вид (с большой буквы, остальные мал)
+        planet = planet.capitalize()
+        #если то что ввели, соответствует одному элементу из библиотеки ephem с тегом Planet
+        if planet in ep_planet:
+            #формируем команду для получения объекта ephem.планета blah-bla
+            #comm = 'ephem.'+ planet + '(datetime.now())'
+            #выполняем эту команду, получаем указатель на объект
+            #p_obj = eval(comm)
+            ephem_planet = getattr(ephem, planet)
+            p_obj = ephem_planet(datetime.now())
+            #получаем созвездие
+            constellation = ephem.constellation(p_obj)
+            #Нормализуем вывод к правилам англ.языка
+            if planet == 'Moon' or planet =='Sun':
+                tex = 'The '
+            else:
+                tex = ''
+            #Формируем вывод сообщения в человечесокм виде
+            tex = tex + planet + ' is in ' + constellation[1] + ' constellation now.'
+            #Выводим сообщение в канал чатбота
+            update.message.reply_text(tex)
+        else:
+            #Выводим сообщение в канал чатбота
+            update.message.reply_text("Unknown planet")
 
 def main():
     mybot = Updater(settings.API_KEY, use_context=True)
@@ -109,7 +121,7 @@ def main():
     dp.add_handler(CommandHandler("start", greet_user))
     dp.add_handler(CommandHandler("wordcount", wordcount))
     dp.add_handler(CommandHandler("next_full_moon", next_full_moon))
-    #dp.add_handler(CommandHandler("planet", planet_const))
+    dp.add_handler(CommandHandler("planet", planet_const))
     dp.add_handler(MessageHandler(Filters.text, talk_to_me))
 
     logging.info(str(datetime.now()) +" Бот стартовал")
