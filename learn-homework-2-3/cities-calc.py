@@ -7,8 +7,6 @@ import random
 
 logging.basicConfig(filename="mybot.log", level=logging.INFO)
 
-cities_game = []
-game_set = []
 
 def mysplit(str1): #Функция для деления предложения на слова принимает str, возвращает list
     word_component = 'абвгдеёжзийклмнопрстуфхцчшщьыъэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЫЪЭЮЯabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -79,27 +77,15 @@ def is_ru(str_in, alphabet=set('абвгдеёжзийклмнопрстуфхц
     #функция проверки строки для игры города
     return set(str_in.lower()).issubset(alphabet)
 
-"""
-def cities_init():
+def cities_set_init():
     #Функция инициализации игрового окружения игры в города
     cities_set = {}
     #считываем каталог городов
     with open('RU_cities.txt','r', encoding='utf-8') as fi:
         for line in fi:
-            a = line.rstrip()
-            cities_set[a] = 0
-        return cities_set
-"""
-
-def cities_set_init():
-    #Функция инициализации игрового окружения игры в города
-    cities_set = {}
-    #считываем каталог городов
-    with open('d:/LP19/learn-homework-2-3/RU_cities.txt','r', encoding='utf-8') as fi:
-        for line in fi:
-            a = line.rstrip()
-            cities_set[a] = { 'is_used' : False, 'first_lett' : a[0].lower(), 'last_lett' : (lambda x: x[-1] if x[-1] not in set('ьъ') else x[-2]) (a) }
-            #cities_set[a] = 0, a[0].lower(), (lambda x: x[-1] if x[-1] not in set('ьъ') else x[-2]) (a)
+            a = line.rstrip().title()
+            cities_set[a] = { 'is_used' : False, 'first_lett' : a[0].lower(), 'last_lett' : (lambda x: x[-1] if x[-1] not in set('ьыъ') else x[-2]) (a) }
+            #cities_set[a] = 0, a[0].lower(), (lambda x: x[-1] if x[-1] not in set('ьыъ') else x[-2]) (a)
         return cities_set
 
 def cities_init():
@@ -130,18 +116,23 @@ def do_response(cities_set, letter):
     elif len(result) > 1:
         result = result[random.randrange(len(result))]
         return result
+    else:
+        return result[0]
+    
 
 def cities(update, context):
     #print("вызван /cities")
+    end_game = 0
     text = update.message.text
     spl = text.split()
     len_spl = len(spl)
     #Название города может быть составным Великие луки, Нижний Новгород
     if len_spl == 3:
         #Если название города из 2 слов - сцепляем название в одну строку
-        city_name = spl[1] + ' ' + spl[2]
-        #продолжить анализ слоного слова        
-    elif len_spl > 3:
+        spl = [ '/cities' , spl[1] + ' ' + spl[2]]
+        len_spl = 2
+        #продолжить анализ сложного слова
+    if len_spl > 3:
         #Если название города из более, чем 2 слов 
         update.message.reply_text("Название города России не бывает больше 2 слов")
     elif len_spl == 1:
@@ -159,66 +150,120 @@ def cities(update, context):
             #Сообщаем об этом пользователю, переводим ход
             update.message.reply_text("Игра города России начата заново, делайте первый ход")
         else:
-            city_name = spl[1]
+            city_name = spl[1].title()
             #Если название города на русском и соотевтствует правилам ввода
             if is_ru(city_name):
-            #Нужно проверить начата ли игра
+            #Нужно проверить начата ли игра (есть ли окружение игры в context.user_data)
                 if 'cities_game' in context.user_data.keys():
-                    #Игра начата
+                    #Если игра начата ранее
                     if context.user_data['cities_game']['cities_last'] == '':
                         #Это первое название города, нужно проверить есть ли введенный город в справочнике
-                        if city_name.lower() in context.user_data['cities_game']['cities_set'].key().lower():
+                        if city_name.lower() in set(x.lower() for x in context.user_data['cities_game']['cities_set'].keys()):
                             #Город есть в списке, выбор принимается, нужно отметить его как использованый
-                            context.user_data['cities_game']['cities_set'][city_name]['is_used'] == True
-                            #Ответный ход
-                            resp = do_response(context.user_data['cities_game']['cities_set'], (lambda x: x[-1] if x[-1] not in set('ьъ') else x[-2]) (city_name.lower()))
+                            context.user_data['cities_game']['cities_set'][city_name]['is_used'] = True
+                            #Ответный ход в do_response передается множство городов и последняя буква города игрока
+                            resp = do_response(context.user_data['cities_game']['cities_set'], (lambda x: x[-1] if x[-1] not in set('ьыъ') else x[-2]) (city_name.lower()))
                             if resp == 0:
+                                #Если в сете не нашелся ответ
                                 update.message.reply_text("Я проиграл")
+                                #Удаляем игровое окружение
+                                end_game = 1
                             else:
+                                #Если ответ нашелся, его помечаем как использованый
                                 context.user_data['cities_game']['cities_set'][resp]['is_used'] = True
+                                #Ответ выводим игроку
                                 update.message.reply_text(resp)
-                                context.user_data['cities_game']['cities_last'] == resp[-1]
+                                #Записываем последнюю букву ответа 
+                                context.user_data['cities_game']['cities_last'] = (lambda x: x[-1] if x[-1] not in set('ьыъ') else x[-2]) (resp.lower())
+                                #Есть ли ход у игрока?
+                                you_loose = do_response(context.user_data['cities_game']['cities_set'], context.user_data['cities_game']['cities_last'])
+                                if you_loose == 0:
+                                    update.message.reply_text("У вас нет ходов, вы проиграли")                                
+                                    #Удаляем игровое окружение
+                                    end_game = 1
                         else:
                             #Города нет в списке
                             update.message.reply_text("Такого города не существует")
+                            #Тут по идее можно предложить записать фантазию пользователя в отдельный файл для передачи на анализ админу (вдруг новый город)
                     else:
-                        #Это не первое название города, нужно проверить есть ли введенный город в справочнике
-                        if city_name.lower() in context.user_data['cities_game']['cities_set'].key().lower():
+                        #Это не первое название города в игре, нужно проверить есть ли введенный город в справочнике
+                        if city_name.lower() in set(x.lower() for x in context.user_data['cities_game']['cities_set'].keys()):
                             #Город есть в списке, проверяем не использовался ли он раньше
                             if context.user_data['cities_game']['cities_set'][city_name]['is_used'] == False:
                                 #Город не использовался
-                                context.user_data['cities_game']['cities_set'][city_name]['is_used'] == True
-                                #Ответный ход
-                                resp = do_response(context.user_data['cities_game']['cities_set'], (lambda x: x[-1] if x[-1] not in set('ьъ') else x[-2]) (city_name.lower()))
-                                if resp == 0:
-                                    update.message.reply_text("Я проиграл")
+                                if city_name[0].lower() == context.user_data['cities_game']['cities_last']:
+                                    context.user_data['cities_game']['cities_set'][city_name]['is_used'] = True
+                                    #Ответный ход
+                                    resp = do_response(context.user_data['cities_game']['cities_set'], (lambda x: x[-1] if x[-1] not in set('ьыъ') else x[-2]) (city_name.lower()))
+                                    if resp == 0:
+                                        update.message.reply_text("Я проиграл")
+                                        moves_ = 0
+                                        for x in context.user_data['cities_game']['cities_set'].keys():
+                                            if context.user_data['cities_game']['cities_set'][x]['is_used'] == True:
+                                                moves_ += 1
+                                        update.message.reply_text("Всего использовано " + str(moves_) + " названий городов")
+                                        #Удаляем игровое окружение
+                                        end_game = 1
+                                        #type(context.user_data)
+                                    else:
+                                        context.user_data['cities_game']['cities_set'][resp]['is_used'] = True
+                                        update.message.reply_text(resp)
+                                        context.user_data['cities_game']['cities_last'] = (lambda x: x[-1] if x[-1] not in set('ьыъ') else x[-2]) (resp.lower())
+                                        #Есть ли ход у игрока?
+                                        you_loose = do_response(context.user_data['cities_game']['cities_set'], context.user_data['cities_game']['cities_last'])
+                                        if you_loose == 0:
+                                            update.message.reply_text("У вас нет ходов, вы проиграли")
+                                            #Удаляем игровое окружение
+                                            end_game = 1
                                 else:
-                                    context.user_data['cities_game']['cities_set'][resp]['is_used'] = True
-                                    update.message.reply_text(resp)
-                                    context.user_data['cities_game']['cities_last'] == resp[-1]
+                                    update.message.reply_text("Мой город закончился на " + context.user_data['cities_game']['cities_last'] )    
                             else:
                                 #Город использовался ранее
                                 update.message.reply_text("Это название использовалось ранее")
                         else:
                             #Города нет в списке
-                            update.message.reply_text("Такого города не существует")                            
+                            update.message.reply_text("Такого города не существует")
+                            #Тут по идее можно предложить записать фантазию пользователя в отдельный файл для передачи на анализ админу (вдруг новый город)
                 else:
                     #игра не начата, инициализируем окружение игры
                     context.user_data['cities_game'] = cities_init()
-                #Проверяем есть ли такое название в справочнике и не использовалось ли такое название ранее
-                check_city_result = check_city(context.user_data['cities_game'], city_name)
-                if check_city_result == -1:
-                    update.message.reply_text("Такого названия города нет в справочнике")
-                elif check_city_result:
-                    update.message.reply_text("А словишко то допустимое")
-                    #Допустимое слово готовим выборку ответов
+                    #Проверяем есть ли название города в справочнике
+                    if city_name.lower() in set(x.lower() for x in context.user_data['cities_game']['cities_set'].keys()):
+                        #Город есть в списке, выбор принимается, нужно отметить его как использованый
+                        context.user_data['cities_game']['cities_set'][city_name]['is_used'] = True
+                        #Ответный ход в do_response передается множство городов и последняя буква города игрока
+                        resp = do_response(context.user_data['cities_game']['cities_set'], (lambda x: x[-1] if x[-1] not in set('ьыъ') else x[-2]) (city_name.lower()))
+                        if resp == 0:
+                            #Если в сете не нашелся ответ
+                            update.message.reply_text("Я проиграл")
+                            #Удаляем игровое окружение
+                            end_game = 1                        
+                        else:
+                            #Если ответ нашелся, его помечаем как использованый
+                            context.user_data['cities_game']['cities_set'][resp]['is_used'] = True
+                            #Ответ выводим игроку
+                            update.message.reply_text(resp)
+                            #Записываем последнюю букву ответа 
+                            context.user_data['cities_game']['cities_last'] = (lambda x: x[-1] if x[-1] not in set('ьыъ') else x[-2]) (resp.lower())
+                            #есть ли ход у игрока?
+                            you_loose = do_response(context.user_data['cities_game']['cities_set'], context.user_data['cities_game']['cities_last'])
+                            if you_loose == 0:
+                                update.message.reply_text("У вас нет ходов, вы проиграли")
+                                #Удаляем игровое окружение
+                                end_game = 1                            
+                    else:
+                        #Города нет в списке
+                        update.message.reply_text("Такого города не существует")
+                        #Тут по идее можно предложить записать фантазию пользователя в отдельный файл для передачи на анализ админу (вдруг новый город)
 
-                else:
-                    #Название города уже использовалось
-                    update.message.reply_text("Название города уже использовалось")
             else:
             #Название города ввели не из русских букв, или содержит недопустимые символы
                 update.message.reply_text("Название города России принимается на русском языке, бывают города из 2 слов, бывают города, название которых пишется через -") 
+    if end_game == 1:
+        try:
+            del context.user_data['cities_game']
+        except KeyError:
+            pass      
 
 def planet_const(update, context):
     #print("вызван /planet")
