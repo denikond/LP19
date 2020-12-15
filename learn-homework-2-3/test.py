@@ -30,12 +30,29 @@ user_data['cities_game']['cities_set'] = cities_init()
 user_data['cities_game']['cities_first'] = 'в'
 user_data['cities_game']['cities_last'] = 'ц'
 
+#mas = [x for x in user_data['cities_game']['cities_set'].keys() if user_data['cities_game']['cities_set'][x]['is_used'] == False]
+for x in user_data['cities_game']['cities_set'].keys():
+    if user_data['cities_game']['cities_set'][x]['is_used'] == False:
+        print(x)
+
+#moves_ = len(dict(x for x in user_data['cities_game']['cities_set'].keys() if user_data['cities_game']['cities_set'][x]['is_used'] == False))
+print(moves_)
+
+city_name = 'ВОлгоград'
+
+#new_ = [x.lower() for x in user_data['cities_game']['cities_set'].keys()]
+#new_dict = set(new_)
+'''
+if city_name.lower() in set(x.lower() for x in user_data['cities_game']['cities_set'].keys()):
+    print('в наборе')
+else:
+    print('не в наборе')
 #print(len(user_data.keys()))
 #print(user_data)
 
 #cities = user_data['cities_game'].keys()
 
-print('cities_game' in user_data.keys())
+#print('cities_game' in user_data.keys())
 #print(len(user_data['cities_game']))
 
 #print(user_data['cities_game']['Абаза'])
@@ -56,3 +73,4 @@ print(do_response(user_data['cities_game']['cities_set'], 'ы'))
 
 #print('Абакан' in cities)
 #print(user_data['cities_game'])
+'''

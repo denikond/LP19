@@ -1,0 +1,148 @@
+def str_normalize(str_i):
+    str_o = ''
+    i = 0
+    len_s = len(str_i)
+    while i<len_s:
+        i += 1
+    return str_o
+
+def find_md(str_i, pos=0, step=1):
+    while str_i[pos] not in '*/':
+        pos += step
+    return pos
+
+def get_dig(str_i, pos=0, step=1):
+    pos_start = pos
+    if step == 1:
+        if str_i[pos] == '-':
+            pos += step
+    
+    while str_i[pos] in '0123456789.':
+        pos += step
+    if step == 1:
+        res = str_i[pos_start:pos]
+        res_pos = pos
+    else:
+        if str_i[pos-1] == '-' and str_i[pos-2] in '*/':
+            pos += step
+        res = str_i[pos+1:pos_start+1]
+        res_pos = pos + 1
+    return res, res_pos
+
+def check_rules(str_i):
+    #Строка не может начинаться с * или / не может заканчиваться * / + - . и перечисление недопустимого соседства
+    if len(str_i) == 0:
+        return 'Длина выражения равна нулю'
+    elif set(str_i).isdisjoint('+-*/')\
+        or str_i.rfind('-') == 0 and set(str_i).isdisjoint('+*/'):
+            return 'Не найдено математических операций'
+    elif str_i[0] in '*/+' \
+        or str_i[-1] in '*/+-.' \
+        or str_i.find('+/') != -1 \
+        or str_i.find('-/') != -1 \
+        or str_i.find('+*') != -1 \
+        or str_i.find('-*') != -1 \
+        or str_i.find('+-') != -1 \
+        or str_i.find('-+') != -1 \
+        or str_i.find('.+') != -1 \
+        or str_i.find('.-') != -1 \
+        or str_i.find('.*') != -1 \
+        or str_i.find('./') != -1 \
+        or str_i.find('**') != -1 \
+        or str_i.find('*/') != -1 \
+        or str_i.find('/*') != -1 \
+        or str_i.find('//') != -1 \
+        or str_i.find('/+') != -1 \
+        or str_i.find('*+') != -1:
+            return "недопустимое выражение"
+    else:
+        return ''
+
+def strip_value(str_i, pos=0):
+    #выделяем значение
+    str_o = ''
+    if str_i[pos] in '+-':
+        str_o += str_i[pos]
+        pos += 1
+    while str_i[pos] in '0123456789.':
+        str_o += str_i[pos]
+        pos += 1
+    #проверка на две . в значении
+    if len([x for x in str_o if x == '.']):
+        error = True
+    else:
+        error = False
+    #возврат значения в числовом виде со знаком, позиции где закончилось значаение, и ошибки в значении
+    return float(str_o), pos, error
+
+def split_string(str_i):
+    list_o = []
+    error = False
+    pos = 0
+    #el_sign = True
+    if (str_i[0] in '+-') and (str_i[1] in '.0123456789'):
+        val, pos, error = strip_value(str_i, 0)
+        if not error:
+            list_o.append(val)
+        else:
+            return error
+    else:
+        error = True
+        return error
+    len_s = len(str_i)
+    while pos < len_s:
+        val, pos, error = strip_op(str_i, pos)
+        if not error:
+            list_o.append(val)
+        else:
+            return error
+        val, pos, error = strip_value(str_i, pos)
+        if not error:
+            list_o.append(val)
+        else:
+            return error
+
+
+#str1 = '2+4.34 * -5*6.2/-3* -7/3.1'
+str1 = '3+2'
+
+invalid_sym = ''.join(set(str1).difference('0123456789+-*/. '))
+if invalid_sym =='':
+    norm_s = ''.join([x for x in str1 if x in '0123456789+-*/.'])
+    print(str1)
+    check_result = check_rules(norm_s)
+    if check_result != '':
+        print(check_result)
+    else:
+        print("выражение корректно")
+    #split_string(norm_s)
+
+    #norm_s = strip_signs(norm_s) Нужно описать функцию убирающие -
+    #norm_s = ''.join([x for x in str1 if x in '0123456789+-*/.='])
+    """
+    print(norm_s)
+    act_pos =find_md(norm_s)
+    print(act_pos)
+    #act = norm_s[find_md(norm_s)]
+    print(act)
+    str_b, pos_b = get_dig(norm_s, find_md(norm_s)+1, 1)
+    b = ''.join(str_b)
+    str_a, pos_a = get_dig(norm_s, find_md(norm_s)-1, -1)
+    a = ''.join(str_a)
+    if act == '*':
+        res = float(a)*float(b)
+        print(a,act,b,'=',res)
+    elif act == '/':
+        res = float(a)/float(b)
+        print(a,act,b,'=',res)
+    del norm_s[pos_a:pos_b]
+    print(norm_s)
+    res_list = [x for x in str(res)]
+    res_list.reverse()
+    for x in res_list:
+        norm_s.insert(pos_a, x)
+    print(''.join(norm_s))
+    #print(res_list)
+    """
+else:
+    print('недопустимый символ', invalid_sym)

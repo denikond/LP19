@@ -265,6 +265,8 @@ def cities(update, context):
         except KeyError:
             pass      
 
+
+
 def planet_const(update, context):
     #print("вызван /planet")
 
