@@ -7,9 +7,13 @@ def str_normalize(str_i):
     return str_o
 
 def find_md(str_i, pos=0, step=1):
-    while str_i[pos] not in '*/':
-        pos += step
-    return pos
+    if str_i.find('*') != -1 \
+        or str_i.find('/') != -1:
+        while str_i[pos] not in '*/':
+            pos += step
+        return pos
+    else:
+        return 0
 
 def get_dig(str_i, pos=0, step=1):
     pos_start = pos
@@ -103,8 +107,8 @@ def split_string(str_i):
             return error
 
 
-#str1 = '2+4.34 * -5*6.2/-3* -7/3.1'
-str1 = '3+2'
+str1 = '2+4.34 * -5*6.2/-3* -7/3.1'
+#str1 = '3+2*2'
 
 invalid_sym = ''.join(set(str1).difference('0123456789+-*/. '))
 if invalid_sym =='':
@@ -115,34 +119,29 @@ if invalid_sym =='':
         print(check_result)
     else:
         print("выражение корректно")
-    #split_string(norm_s)
+        #split_string(norm_s)
+        #norm_s = strip_signs(norm_s) Нужно описать функцию убирающие -
+        #norm_s = ''.join([x for x in str1 if x in '0123456789+-*/.='])
+        print(norm_s)
+        act_pos = find_md(norm_s)
+        while act_pos != 0:
+            print(act_pos)
+            act = norm_s[act_pos]
+            print(act)
+            str_b, pos_b = get_dig(norm_s, find_md(norm_s)+1, 1)
+            #b = ''.join(str_b)
+            str_a, pos_a = get_dig(norm_s, find_md(norm_s)-1, -1)
+            #a = ''.join(str_a)
+            if act == '*':
+                res = float(str_a)*float(str_b)
+                print(str_a,act,str_b,'=',res)
+            elif act == '/':
+                res = float(str_a)/float(str_b)
+                print(str_a,act,str_b,'=',res)
+            norm_s = norm_s[:pos_a] + str(res) + norm_s[pos_b:]
+            print(norm_s)
+            act_pos = find_md(norm_s)
 
-    #norm_s = strip_signs(norm_s) Нужно описать функцию убирающие -
-    #norm_s = ''.join([x for x in str1 if x in '0123456789+-*/.='])
-    """
-    print(norm_s)
-    act_pos =find_md(norm_s)
-    print(act_pos)
-    #act = norm_s[find_md(norm_s)]
-    print(act)
-    str_b, pos_b = get_dig(norm_s, find_md(norm_s)+1, 1)
-    b = ''.join(str_b)
-    str_a, pos_a = get_dig(norm_s, find_md(norm_s)-1, -1)
-    a = ''.join(str_a)
-    if act == '*':
-        res = float(a)*float(b)
-        print(a,act,b,'=',res)
-    elif act == '/':
-        res = float(a)/float(b)
-        print(a,act,b,'=',res)
-    del norm_s[pos_a:pos_b]
-    print(norm_s)
-    res_list = [x for x in str(res)]
-    res_list.reverse()
-    for x in res_list:
-        norm_s.insert(pos_a, x)
-    print(''.join(norm_s))
-    #print(res_list)
-    """
+
 else:
     print('недопустимый символ', invalid_sym)
