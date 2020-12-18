@@ -4,6 +4,7 @@ import logging
 from datetime import datetime, timedelta
 import locale, ephem
 import random
+import mycalc
 
 logging.basicConfig(filename="mybot.log", level=logging.INFO)
 
@@ -49,10 +50,23 @@ def greet_user(update, context):
     #print(update)
     #Помогатор "что я умею"
     update.message.reply_text("я поддерживаю следующие команды")
+    update.message.reply_text("/calc <математическое выражение>")
     update.message.reply_text("/cities <название города>")
     update.message.reply_text("/next_full_moon YYYY-MM-DD")
     update.message.reply_text("/planet <Solar system planet>")
     update.message.reply_text("/wordcount <строка>")
+
+def calc(update, context):
+    text = update.message.text
+    if len(text) == 5:
+        update.message.reply_text("Вы можете ввести")
+        update.message.reply_text("/calc <математическое выражение>")
+        update.message.reply_text("я попробую посчитать")
+        update.message.reply_text("я понимаю действия +-*/, отрицательные числа, десятичные значения с .")
+        update.message.reply_text("скобки увы меня не научили понимать")
+    else:
+        result = mycalc.mycalc(text[5:])
+        update.message.reply_text(result)
 
 def next_full_moon(update, context): #Функция возвращающая ближайшее полнолуние
     #locale.setlocale(locale.LC_ALL, "russian") В данном случае не используется
@@ -322,6 +336,7 @@ def main():
     dp.add_handler(CommandHandler("next_full_moon", next_full_moon))
     dp.add_handler(CommandHandler("planet", planet_const))
     dp.add_handler(CommandHandler("cities", cities))
+    dp.add_handler(CommandHandler("calc", calc))
     dp.add_handler(MessageHandler(Filters.text, talk_to_me))
 
     logging.info(str(datetime.now()) +" Бот стартовал")
